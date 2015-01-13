@@ -10,6 +10,13 @@ class Main(object):
         self.collector = Collector(value_change_callback=self.on_source_value_change)
         for source_conf in self.config.get('sources', []):
             self.add_source(**source_conf)
+        if not len(self.sources):
+            for cls in SOURCE_CLASSES.itervalues():
+                if not hasattr(cls, 'build_defaults'):
+                    continue
+                for source_conf in cls.build_defaults():
+                    self.add_source(**source_conf)
+            self.update_conf()
     def add_source(self, **kwargs):
         cls = kwargs.get('cls')
         if cls is None:

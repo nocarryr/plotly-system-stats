@@ -49,7 +49,7 @@ class BaseMetric(object):
         now = time.time()
         last_update = self.last_update
         if last_update is not None:
-            if now - last_update < self.interval:
+            if now - last_update < self.source.update_interval:
                 return
         self.last_update = now
         kwargs.setdefault('now', now)

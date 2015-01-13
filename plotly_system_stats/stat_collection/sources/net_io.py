@@ -1,3 +1,5 @@
+import os
+
 from plotly_system_stats.stat_collection.sources.base_source import BaseSource, BaseMetric
 
 class NetworkDevice(BaseSource):
@@ -6,6 +8,14 @@ class NetworkDevice(BaseSource):
         self.device_name = kwargs.get('device_name')
         for key in ['rx', 'tx']:
             self.add_metric(NetworkIOCurrent, name=key)
+    @classmethod
+    def build_defaults(cls):
+        l = []
+        for dev in os.listdir('/sys/class/net'):
+            if dev == 'lo':
+                continue
+            l.append(dict(cls=cls, name=dev, device_name=dev))
+        return l
     def get_conf_data(self):
         d = super(NetworkDevice, self).get_conf_data()
         d['device_name'] = self.device_name

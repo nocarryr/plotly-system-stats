@@ -14,7 +14,13 @@ class BaseSource(object):
         self.metrics[obj.name] = obj
         return obj
     def update_metrics(self, *args, **kwargs):
+        now = kwargs.get('now')
+        if now is None:
+            now = time.time()
+            kwargs.setdefault('now', now)
         for obj in self.metrics.itervalues():
+            if not obj.update_needed(*args, **kwargs):
+                continue
             obj.update(*args, **kwargs)
     def on_metric_value_changed(self, **kwargs):
         cb = self.value_change_callback
@@ -45,14 +51,21 @@ class BaseMetric(object):
         old = self._value
         self._value = value
         self.source.on_metric_value_changed(metric=self, value=value, old=old)
-    def update(self, *args, **kwargs):
-        now = time.time()
+    def update_needed(self, *args, **kwargs):
+        now = kwargs.get('now')
+        if now is None:
+            now = time.time()
         last_update = self.last_update
-        if last_update is not None:
-            if now - last_update < self.source.update_interval:
-                return
+        if last_update is None:
+            return True
+        return now - last_update >= self.source.update_interval
+    def update(self, *args, **kwargs):
+        now = kwargs.get('now')
+        if now is None:
+            now = time.time()
+            kwargs.setdefault('now', now)
+        last_update = self.last_update
         self.last_update = now
-        kwargs.setdefault('now', now)
         kwargs.setdefault('last_update', last_update)
         self.do_update(*args, **kwargs)
     def do_update(self, *args, **kwargs):

@@ -8,7 +8,7 @@ class Config(object):
         self.conf_loader = JSONConfLoader()
         self.data.update(self.conf_loader.read_all())
     def write_all(self):
-        self.conf_loader.write_all()
+        self.conf_loader.write_all(self.data)
     def get(self, key, default=None):
         return self.data.get(key, default)
     def set(self, key, value):

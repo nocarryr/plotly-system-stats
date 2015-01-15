@@ -1,16 +1,16 @@
 import time
 from collections import OrderedDict
-from plotly_system_stats.config import Config
+
+from plotly_system_stats.config import config
 from plotly_system_stats.stat_collection.collection.collector import Collector
 from plotly_system_stats.stat_collection.sources import SOURCE_CLASSES
 
 class Main(object):
     def __init__(self, **kwargs):
-        self.config = Config()
         self.running = False
         self.sources = OrderedDict()
         self.collector = Collector(value_change_callback=self.on_source_value_change)
-        for source_conf in self.config.get('sources', []):
+        for source_conf in config.get('sources', []):
             self.add_source(**source_conf)
         if not len(self.sources):
             for cls in SOURCE_CLASSES.itervalues():
@@ -32,7 +32,7 @@ class Main(object):
         sources = []
         for source in self.sources.itervalues():
             sources.append(source.get_conf_data())
-        self.config.set('sources', sources)
+        config.set('sources', sources)
     def on_source_value_change(self, **kwargs):
         pass
     def mainloop(self):

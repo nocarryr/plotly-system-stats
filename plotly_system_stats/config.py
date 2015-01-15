@@ -7,6 +7,8 @@ class Config(object):
         self.data = {}
         self.conf_loader = JSONConfLoader()
         self.data.update(self.conf_loader.read_all())
+    def write_all(self):
+        self.conf_loader.write_all()
     def get(self, key, default=None):
         return self.data.get(key, default)
     def set(self, key, value):
@@ -68,3 +70,4 @@ class JSONConfLoader(FileBasedLoader):
             return {}
         return json.loads(s)
         
+config = Config()

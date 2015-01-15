@@ -33,6 +33,7 @@ class Trace(object):
         traces = self.plot.get_conf('traces')
         if traces is None:
             traces = {}
+            self.plot.set_conf('traces', traces)
         d = traces.get(self.id)
         if d is None:
             d = {}

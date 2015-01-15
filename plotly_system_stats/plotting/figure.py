@@ -18,9 +18,8 @@ class Figure(object):
             self.filename = self.id
             self.set_conf('filename', self.filename)
         self.plots = OrderedDict()
-        ## TODO: this doesn't get loaded correctly
-        #for plot_id in self.get_conf('plot_ids', []):
-        #    self.add_subplot(source_id=plot_id)
+        for plot_id in self.get_conf('plot_ids', []):
+            self.add_subplot(source_id=plot_id)
         if not len(self.plots):
             for source in kwargs.get('sources', []):
                 self.add_subplot(source=source)

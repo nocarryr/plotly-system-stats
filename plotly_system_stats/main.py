@@ -4,6 +4,7 @@ from collections import OrderedDict
 from plotly_system_stats.config import config
 from plotly_system_stats.stat_collection.collection.collector import Collector
 from plotly_system_stats.stat_collection.sources import SOURCE_CLASSES
+from plotly_system_stats.plotting.figure import Figure
 
 class Main(object):
     def __init__(self, **kwargs):
@@ -20,6 +21,7 @@ class Main(object):
                 for source_conf in cls.build_defaults():
                     self.add_source(**source_conf)
             self.update_conf()
+        self.figure = Figure(main=self, sources=self.sources.values())
     def add_source(self, **kwargs):
         cls = kwargs.get('cls')
         if cls is None:

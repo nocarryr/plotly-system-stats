@@ -24,6 +24,14 @@
     <Source>plotly_system_stats/stat_collection/collection/scheduler.py</Source>
     <Source>plotly_system_stats/config.py</Source>
     <Source>plotly_system_stats/main.py</Source>
+    <Source>plotly_system_stats/stat_collection/sources/cpu_usage.py</Source>
+    <Source>plotly_system_stats/plotting/__init__.py</Source>
+    <Source>plotly_system_stats/plotting/trace.py</Source>
+    <Source>plotly_system_stats/plotting/plot_config.py</Source>
+    <Source>plotly_system_stats/plotting/stream.py</Source>
+    <Source>plotly_system_stats/utils.py</Source>
+    <Source>plotly_system_stats/plotting/plot.py</Source>
+    <Source>plotly_system_stats/plotting/figure.py</Source>
   </Sources>
   <Forms/>
   <Translations/>

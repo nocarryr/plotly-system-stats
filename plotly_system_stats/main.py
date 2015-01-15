@@ -9,7 +9,8 @@ class Main(object):
     def __init__(self, **kwargs):
         self.running = False
         self.sources = OrderedDict()
-        self.collector = Collector(value_change_callback=self.on_source_value_change)
+        self.collector = Collector()
+        self.collector.value_change_callbacks.bind(self.on_source_value_change)
         for source_conf in config.get('sources', []):
             self.add_source(**source_conf)
         if not len(self.sources):

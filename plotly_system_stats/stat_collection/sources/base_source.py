@@ -1,12 +1,14 @@
 import time
 from collections import OrderedDict
 
+from plotly_system_stats.utils import WeakCallbacks
+
 class BaseSource(object):
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')
         if not hasattr(self, 'update_interval'):
             self.update_interval = kwargs.get('update_interval', 4.)
-        self.value_change_callback = kwargs.get('value_change_callback')
+        self.value_change_callbacks = WeakCallbacks()
         self.metrics = OrderedDict()
     def add_metric(self, cls, **kwargs):
         kwargs.setdefault('source', self)
@@ -23,11 +25,8 @@ class BaseSource(object):
                 continue
             obj.update(*args, **kwargs)
     def on_metric_value_changed(self, **kwargs):
-        cb = self.value_change_callback
-        if cb is None:
-            return
         kwargs.setdefault('source', self)
-        cb(**kwargs)
+        self.value_change_callbacks(**kwargs)
     def get_conf_data(self):
         d = dict(cls_name=self.__class__.__name__, name=self.name, metrics=[])
         for obj in self.metrics.itervalues():

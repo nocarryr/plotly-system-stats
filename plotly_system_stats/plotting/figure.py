@@ -33,8 +33,7 @@ class Figure(object):
                 rows += 1
         self.pl_figure = pl_tools.get_subplots(rows=rows, columns=cols)
         self.pl_figure['data'] += self.pl_data
-        self.url = pl.plot(self.pl_figure, filename=self.filename, 
-                           fileopt='extend', auto_open=False)
+        self.url = pl.plot(self.pl_figure, filename=self.filename, auto_open=False)
     def get_unique_id(self):
         d = plot_config.get('figures')
         if not len(d.keys()):

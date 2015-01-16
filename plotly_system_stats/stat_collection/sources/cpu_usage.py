@@ -10,46 +10,34 @@ class CPUPercentThread(threading.Thread):
         super(CPUPercentThread, self).__init__()
         self.percpu = kwargs.get('percpu')
         self.callback = kwargs.get('callback')
+        self.now = kwargs.get('now')
     def run(self):
         v = psutil.cpu_percent(interval=1, percpu=self.percpu)
-        self.callback(thread=self, value=v)
+        self.callback(thread=self, value=v, now=self.now)
         
 class CPUUsage(BaseSource):
     def __init__(self, **kwargs):
-        self._cpu_percent_threads = {'total':None, 'percpu':None}
-        self._cpu_percent_values = {'total':None, 'percpu':None}
+        self._cpu_percent_thread = None
         self._last_now = None
-        kwargs.setdefault('name', 'CPU Usage')
         super(CPUUsage, self).__init__(**kwargs)
-        self.add_metric(CPUMetric, name='Total')
-        cpu_count = psutil.cpu_count()
-        if cpu_count > 1:
+        if self.name == 'CPU Total':
+            self.add_metric(CPUMetric, name='Percent')
+        else:
+            cpu_count = psutil.cpu_count()
             for i in range(cpu_count):
                 self.add_metric(CPUMetric, name='CPU%s' % (i), index=i)
     def get_cpu_percent(self):
-        t_dict = self._cpu_percent_threads
         cb = self.on_cpu_percent_thread_done
-        for key, percpu in {'total':False, 'percpu':True}.iteritems():
-            t = t_dict.get(key)
-            if t is not None and t.is_alive():
-                continue
-            t = CPUPercentThread(percpu=percpu, callback=cb)
-            self._cpu_percent_threads[key] = t
-            t.start()
-    def on_cpu_percent_thread_done(self, **kwargs):
-        t = kwargs.get('thread')
-        value = kwargs.get('value')
-        if t.percpu:
-            key = 'percpu'
+        if self.name == 'CPU Total':
+            percpu = False
         else:
-            key = 'total'
-        self._cpu_percent_threads[key] = None
-        self._cpu_percent_values[key] = value
-        if None in self._cpu_percent_values.values():
-            return
-        cpu_percent = self._cpu_percent_values.copy()
-        self._cpu_percent_values.update({'total':None, 'percpu':None})
-        self.update_metrics(cpu_percent=cpu_percent, now=self._last_now)
+            percpu = True
+        t = self._cpu_percent_thread = CPUPercentThread(percpu=percpu, callback=cb)
+        t.start()
+    def on_cpu_percent_thread_done(self, **kwargs):
+        value = kwargs.get('value')
+        self._cpu_percent_thread = None
+        self.update_metrics(cpu_percent=value, now=self._last_now)
     def update_metrics(self, *args, **kwargs):
         now = kwargs.get('now')
         if now is None:
@@ -63,7 +51,8 @@ class CPUUsage(BaseSource):
         super(CPUUsage, self).update_metrics(*args, **kwargs)
     @classmethod
     def build_defaults(cls):
-        return [dict(cls=cls)]
+        return [dict(cls=cls, name='CPU Total'), 
+                dict(cls=cls, name='CPU Cores')]
     
 class CPUMetric(BaseMetric):
     def __init__(self, **kwargs):
@@ -72,6 +61,6 @@ class CPUMetric(BaseMetric):
     def do_update(self, *args, **kwargs):
         cpu_percent = kwargs.get('cpu_percent')
         if self.index is None:
-            self.value = cpu_percent['total']
+            self.value = cpu_percent
         else:
-            self.value = cpu_percent['percpu'][self.index]
+            self.value = cpu_percent[self.index]

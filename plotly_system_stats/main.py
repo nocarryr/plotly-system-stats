@@ -1,4 +1,5 @@
 import time
+import platform
 from collections import OrderedDict
 
 from plotly_system_stats.config import config
@@ -21,7 +22,17 @@ class Main(object):
                 for source_conf in cls.build_defaults():
                     self.add_source(**source_conf)
             self.update_conf()
-        self.figure = Figure(main=self, sources=self.sources.values())
+        self.figures = {}
+        for key, conf_data in config.get('plotly', {}).get('figures', {}).iteritems():
+            fkwargs = conf_data.copy()
+            fkwargs.update(dict(main=self, id=key))
+            figure = Figure(**fkwargs)
+            self.figures[figure.id] = figure
+        if not len(self.figures):
+            fig_id = '_'.join([platform.node(), 'system_stats'])
+            figure = Figure(main=self, sources=self.sources.values(), id=fig_id)
+            self.figures[figure.id] = figure
+        #self.figure = Figure(main=self, sources=self.sources.values())
     def add_source(self, **kwargs):
         cls = kwargs.get('cls')
         if cls is None:

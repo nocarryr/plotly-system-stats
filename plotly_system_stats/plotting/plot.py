@@ -1,9 +1,10 @@
 from collections import OrderedDict
 
 from plotly_system_stats.plotting.plot_config import plot_config
-from plotly_system_stats.plotting.trace import Trace
+from plotly_system_stats.plotting.trace import Trace, SubplotTrace
 
 class BasePlot(object):
+    trace_cls = Trace
     def __init__(self, **kwargs):
         self.main = kwargs.get('main')
         self.source = kwargs.get('source')
@@ -34,7 +35,7 @@ class BasePlot(object):
         plot_config.write_all()
     def add_trace(self, **kwargs):
         kwargs.setdefault('plot', self)
-        trace = Trace(**kwargs)
+        trace = self.trace_cls(**kwargs)
         self.traces[trace.id] = trace
         return trace
     def on_source_value_change(self, **kwargs):
@@ -55,6 +56,7 @@ class Plot(BasePlot):
         
     
 class SubPlot(BasePlot):
+    trace_cls = SubplotTrace
     def __init__(self, **kwargs):
         self.figure = kwargs.get('figure')
         self.index = kwargs.get('index')
@@ -67,6 +69,8 @@ class SubPlot(BasePlot):
     def add_trace(self, **kwargs):
         if self.index is None:
             self.get_next_index()
-        kwargs['trace_kwargs'] = dict(xaxis='x%s' % (self.index+1), 
-                                      yaxis='y%s' % (self.index+1))
+        self.axis_indecies = self.get_conf('axis_indecies')
+        if self.axis_indecies is None:
+            self.axis_indecies = self.figure.get_next_axis_indecies()
+            self.set_conf('axis_indecies', self.axis_indecies)
         return super(SubPlot, self).add_trace(**kwargs)

@@ -2,7 +2,6 @@ from collections import OrderedDict
 
 import plotly.plotly as pl
 import plotly.graph_objs as pl_graph_objs
-import plotly.tools as pl_tools
 
 from plotly_system_stats.plotting.plot_config import plot_config
 from plotly_system_stats.plotting.plot import SubPlot
@@ -25,14 +24,9 @@ class Figure(object):
                 self.add_subplot(source=source)
         self.set_conf('plot_ids', [plot.id for plot in self.plots.values()])
         self.pl_data = pl_graph_objs.Data([t.pl_trace for t in self.iter_traces()])
-        cols = 2
-        rows = 1
-        if len(self.plots) > cols:
-            rows = len(self.plots) / 2
-            if len(self.plots) < cols * rows:
-                rows += 1
-        self.pl_figure = pl_tools.get_subplots(rows=rows, columns=cols)
-        self.pl_figure['data'] += self.pl_data
+        
+        self.build_layout()
+        self.pl_figure = pl_graph_objs.Figure(data=self.pl_data, layout=self.pl_layout)
         self.url = pl.plot(self.pl_figure, filename=self.filename, auto_open=False)
     def get_unique_id(self):
         d = plot_config.get('figures')
@@ -43,10 +37,70 @@ class Figure(object):
         self.id = key
         d[key] = {}
         plot_config.write_all()
+    def build_layout(self):
+        kwargs = {}
+        sizes = self.calc_plot_sizes()
+        last_anchor = None
+        for size, plot in zip(sizes, self.plots.values()):
+            has_multiple = len(plot.traces) > 1
+            overlaying_x = None
+            overlaying_y = None
+            akwargs = {'x':{}, 'y':{}}
+            akwargs['y']['domain'] = size
+            if last_anchor is not None:
+                akwargs['x']['anchor'] = last_anchor
+            for trace in plot.traces.itervalues():
+                tr_keys = trace.axis_pl_keys
+                tr_vals = trace.axis_pl_vals
+                if False:#has_multiple:
+                    if overlaying_y is None:
+                        overlaying_y = tr_vals['y']
+                    else:
+                        akwargs['y']['overlaying'] = overlaying_y
+                        akwargs['y']['mirror'] = True
+                        #akwargs['x']['anchor'] = overlaying_y
+                        if 'domain' in akwargs['y']:
+                            del akwargs['y']['domain']
+                    if overlaying_x is None:
+                        overlaying_x = tr_vals['x']
+                    else:
+                        akwargs['x']['overlaying'] = overlaying_x
+                        akwargs['x']['mirror'] = True
+                        #akwargs['y']['anchor'] = overlaying_x
+                        if 'anchor' in akwargs['x']:
+                            del akwargs['x']['anchor']
+                yaxis = pl_graph_objs.YAxis(**akwargs['y'])
+                kwargs[tr_keys['y']] = yaxis
+                if len(akwargs['x']):
+                    xaxis = pl_graph_objs.XAxis(**akwargs['x'])
+                    kwargs[tr_keys['x']] = xaxis
+                last_anchor = tr_vals['y']
+        self.pl_layout = pl_graph_objs.Layout(**kwargs)
+    def calc_plot_sizes(self):
+        count = len(self.plots)
+        spacing = .3 / count
+        height = (1 - spacing * (count - 1)) / count
+        l = []
+        for i in range(count):
+            start = (height + spacing) * i
+            end = start + height
+            l.append([start, end])
+        return l
+    def get_next_axis_indecies(self):
+        d = {'x':1, 'y':1}
+        for plot in self.plots.itervalues():
+            for key, val in plot.axis_indecies.iteritems():
+                if val >= d[key]:
+                    d[key] = val + 1
+        d['x'] = 1
+        return d
     def get_conf(self, key, default=None):
         return plot_config.get('figures').get(self.id, {}).get(key, default)
     def set_conf(self, key, item):
         d = plot_config.get('figures').get(self.id)
+        if d is None:
+            d = {}
+            plot_config.get('figures')[self.id] = d
         d[key] = item
         plot_config.write_all()
     def add_subplot(self, **kwargs):
@@ -63,3 +117,4 @@ class Figure(object):
         for plot in self.plots.itervalues():
             for trace in plot.traces.itervalues():
                 yield trace
+    

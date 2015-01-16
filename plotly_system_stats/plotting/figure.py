@@ -42,9 +42,6 @@ class Figure(object):
         sizes = self.calc_plot_sizes()
         last_anchor = None
         for size, plot in zip(sizes, self.plots.values()):
-            has_multiple = len(plot.traces) > 1
-            overlaying_x = None
-            overlaying_y = None
             akwargs = {'x':{}, 'y':{}}
             akwargs['y']['domain'] = size
             if last_anchor is not None:
@@ -52,23 +49,6 @@ class Figure(object):
             for trace in plot.traces.itervalues():
                 tr_keys = trace.axis_pl_keys
                 tr_vals = trace.axis_pl_vals
-                if False:#has_multiple:
-                    if overlaying_y is None:
-                        overlaying_y = tr_vals['y']
-                    else:
-                        akwargs['y']['overlaying'] = overlaying_y
-                        akwargs['y']['mirror'] = True
-                        #akwargs['x']['anchor'] = overlaying_y
-                        if 'domain' in akwargs['y']:
-                            del akwargs['y']['domain']
-                    if overlaying_x is None:
-                        overlaying_x = tr_vals['x']
-                    else:
-                        akwargs['x']['overlaying'] = overlaying_x
-                        akwargs['x']['mirror'] = True
-                        #akwargs['y']['anchor'] = overlaying_x
-                        if 'anchor' in akwargs['x']:
-                            del akwargs['x']['anchor']
                 yaxis = pl_graph_objs.YAxis(**akwargs['y'])
                 kwargs[tr_keys['y']] = yaxis
                 if len(akwargs['x']):

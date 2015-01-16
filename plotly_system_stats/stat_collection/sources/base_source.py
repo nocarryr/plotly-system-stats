@@ -49,7 +49,7 @@ class BaseMetric(object):
             return
         old = self._value
         self._value = value
-        self.source.on_metric_value_changed(metric=self, value=value, old=old)
+        self.source.on_metric_value_changed(metric=self, now=self.last_update, value=value, old=old)
     def update_needed(self, *args, **kwargs):
         now = kwargs.get('now')
         if now is None:

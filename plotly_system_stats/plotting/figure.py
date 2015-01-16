@@ -46,15 +46,15 @@ class Figure(object):
             akwargs['y']['domain'] = size
             if last_anchor is not None:
                 akwargs['x']['anchor'] = last_anchor
-            for trace in plot.traces.itervalues():
-                tr_keys = trace.axis_pl_keys
-                tr_vals = trace.axis_pl_vals
-                yaxis = pl_graph_objs.YAxis(**akwargs['y'])
-                kwargs[tr_keys['y']] = yaxis
-                if len(akwargs['x']):
-                    xaxis = pl_graph_objs.XAxis(**akwargs['x'])
-                    kwargs[tr_keys['x']] = xaxis
-                last_anchor = tr_vals['y']
+            akwargs['y']['title'] = plot.id
+            tr_keys = plot.axis_pl_keys
+            tr_vals = plot.axis_pl_vals
+            yaxis = pl_graph_objs.YAxis(**akwargs['y'])
+            kwargs[tr_keys['y']] = yaxis
+            if len(akwargs['x']):
+                xaxis = pl_graph_objs.XAxis(**akwargs['x'])
+                kwargs[tr_keys['x']] = xaxis
+            last_anchor = tr_vals['y']
         self.pl_layout = pl_graph_objs.Layout(**kwargs)
     def calc_plot_sizes(self):
         count = len(self.plots)

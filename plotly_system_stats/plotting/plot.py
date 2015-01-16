@@ -61,6 +61,16 @@ class SubPlot(BasePlot):
         self.figure = kwargs.get('figure')
         self.index = kwargs.get('index')
         super(SubPlot, self).__init__(**kwargs)
+    @property
+    def axis_pl_keys(self):
+        d = self.axis_indecies
+        keys = d.keys()
+        return dict(zip(keys, ['%saxis%s' % (key, d[key]) for key in keys]))
+    @property
+    def axis_pl_vals(self):
+        d = self.axis_indecies
+        keys = d.keys()
+        return dict(zip(keys, ['%s%s' % (key, d[key]) for key in keys]))
     def get_next_index(self):
         self.index = self.get_conf('index')
         if self.index is None:

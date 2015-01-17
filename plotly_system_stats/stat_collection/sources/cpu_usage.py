@@ -16,6 +16,8 @@ class CPUPercentThread(threading.Thread):
         self.callback(thread=self, value=v, now=self.now)
         
 class CPUUsage(BaseSource):
+    _group_name = 'CPU'
+    group_index = 0
     def __init__(self, **kwargs):
         self._cpu_percent_thread = None
         self._last_now = None

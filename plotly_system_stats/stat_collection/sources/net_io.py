@@ -3,6 +3,8 @@ import os
 from plotly_system_stats.stat_collection.sources.base_source import BaseSource, BaseMetric
 
 class NetworkDevice(BaseSource):
+    _group_name = 'Net'
+    group_index = 1
     def __init__(self, **kwargs):
         super(NetworkDevice, self).__init__(**kwargs)
         self.device_name = kwargs.get('device_name')
